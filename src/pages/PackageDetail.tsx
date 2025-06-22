@@ -11,6 +11,7 @@ import {
   MapPin,
   Star,
   Calendar as CalendarIcon,
+  X,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -260,6 +261,10 @@ const PackageDetail: React.FC = () => {
     window.dispatchEvent(chatEvent);
   };
 
+  // Function to close the modal
+  const closeModal = () => {
+    setShowCheckoutModal(false);
+  };
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -432,8 +437,24 @@ const PackageDetail: React.FC = () => {
       </div>
 
       {showCheckoutModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={closeModal} // <--- Add this onClick handler
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto relative" // <--- Add 'relative' here for positioning the X button
+            onClick={(e) => e.stopPropagation()} // <--- Add this to prevent clicks inside from closing the modal
+          >
+            {/* 2. Where to add the X button at the top of the form: */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 p-1 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              onClick={closeModal} // <--- This button closes the modal
+            >
+              <X className="h-5 w-5" /> {/* Lucide-react X icon */}
+            </Button>
+
             <h2 className="text-xl font-semibold text-gray-800">
               Complete Your Booking
             </h2>
