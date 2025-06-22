@@ -162,7 +162,7 @@ const TourPackages: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <Badge className="absolute top-4 left-4 bg-red-600 hover:bg-red-700">
-                  Save ${pkg.originalPrice - pkg.price}
+                  Save ETB {pkg.originalPrice - pkg.price}
                 </Badge>
                 <div className="absolute top-4 right-4 bg-white rounded-full px-2 py-1 flex items-center space-x-1">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -218,10 +218,10 @@ const TourPackages: React.FC = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <span className="text-2xl font-bold text-green-600">
-                        ${pkg.price}
+                        ETB {pkg.price}
                       </span>
                       <span className="text-sm text-gray-500 line-through ml-2">
-                        ${pkg.originalPrice}
+                        ETB {pkg.originalPrice}
                       </span>
                       <div className="text-xs text-gray-500">per person</div>
                     </div>

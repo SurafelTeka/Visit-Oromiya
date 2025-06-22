@@ -84,12 +84,12 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
   if (isInline) {
     return (
       <div className="w-full max-w-md mx-auto">
-        <div className="flex items-center space-x-2 bg-transparent backdrop-blur-sm rounded-full p-3 border border-white/30 shadow-lg">
+        <div className="flex items-center space-x-8 bg-transparent backdrop-blur-sm rounded-full p-3 border border-white/80 shadow-lg">
           <MessageCircle className="h-5 w-5 text-white ml-2" />
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask me about Oromia tours..."
+            placeholder="Ask me anything about Oromia tours..."
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             className="flex-1 bg-transparent text-white placeholder-white placeholder:text-white border-none focus:outline-none focus:ring-0"
           />

@@ -244,7 +244,7 @@ const PackageDetail: React.FC = () => {
                 className="w-full h-full object-cover"
               />
               <Badge className="absolute top-4 left-4 bg-red-600 hover:bg-red-700">
-                Save ${pkg.originalPrice - pkg.price}
+                Save ETB {pkg.originalPrice - pkg.price}
               </Badge>
               <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 flex items-center space-x-1">
                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -324,10 +324,10 @@ const PackageDetail: React.FC = () => {
               <CardContent className="space-y-6">
                 <div className="text-center">
                   <span className="text-3xl font-bold text-green-600">
-                    ${pkg.price}
+                    ETB {pkg.price}
                   </span>
                   <span className="text-lg text-gray-500 line-through ml-2">
-                    ${pkg.originalPrice}
+                    ETB {pkg.originalPrice}
                   </span>
                   <div className="text-sm text-gray-500">per person</div>
                 </div>
@@ -363,12 +363,12 @@ const PackageDetail: React.FC = () => {
                         <span className="capitalize">{type} Room</span>
                         {type === "single" && (
                           <span className="ml-auto text-sm text-gray-500">
-                            +$100
+                            +ETB 100
                           </span>
                         )}
                         {type === "triple" && (
                           <span className="ml-auto text-sm text-gray-500">
-                            -$50
+                            - ETB 50
                           </span>
                         )}
                       </label>
