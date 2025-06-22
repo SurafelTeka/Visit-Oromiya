@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Send, MessageCircle, X } from "lucide-react";
+// import { Send, MessageCircle, X } from "lucide-react";
+import { Send, Mic, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -85,7 +86,7 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
     return (
       <div className="w-full max-w-md mx-auto">
         <div className="flex items-center space-x-8 bg-transparent backdrop-blur-sm rounded-full p-3 border border-white/80 shadow-lg">
-          <MessageCircle className="h-5 w-5 text-white ml-2" />
+          <Mic className="h-5 w-5 text-white ml-2" />
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -112,7 +113,7 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-2xl animate-pulse"
         >
-          <MessageCircle className="h-6 w-6 text-white" />
+          <Mic className="h-6 w-6 text-white" />
         </Button>
       )}
 
