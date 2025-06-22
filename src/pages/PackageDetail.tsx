@@ -15,14 +15,25 @@ import {
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ChatBar from "@/components/ChatBar";
+import countries from "../countries.json";
 
 const PackageDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     new Date()
   );
   const [roomType, setRoomType] = React.useState("double");
+  const [showCheckoutModal, setShowCheckoutModal] = React.useState(false);
+  const [userName, setUserName] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [passportFile, setPassportFile] = React.useState<File | null>(null);
+  const [adults, setAdults] = React.useState(1);
+  const [kids, setKids] = React.useState(0);
+
+  const [nationality, setNationality] = React.useState("");
 
   const packages = {
     "1": {
@@ -36,8 +47,7 @@ const PackageDetail: React.FC = () => {
       reviews: 127,
       image:
         "https://d64gsuwffb70l.cloudfront.net/684ec8cbd778b5af2d6cb1f6_1750578666391_a9a3627f.jpeg",
-      description:
-        "Experience the breathtaking Bale Mountains, home to endemic wildlife including the Ethiopian Wolf and Mountain Nyala. Trek through Afro-alpine landscapes and witness unique biodiversity.",
+      description: "Experience the breathtaking Bale Mountains...",
       highlights: [
         "Ethiopian Wolf Tracking",
         "Sanetti Plateau Trek",
@@ -198,6 +208,8 @@ const PackageDetail: React.FC = () => {
         "Binoculars",
       ],
     },
+
+    // ... other packages (2 to 6)
   };
 
   const pkg = packages[id as keyof typeof packages];
@@ -209,6 +221,33 @@ const PackageDetail: React.FC = () => {
       </div>
     );
   }
+
+  const submitCheckout = () => {
+    console.log({
+      userName,
+      phone,
+      email,
+      passportFile,
+      selectedDate,
+      roomType,
+      adults,
+      kids,
+      nationality,
+    });
+    const chatEvent = new CustomEvent("openChat", {
+      detail: {
+        message: `Hi, my name is ${userName}. I would like to book the ${
+          pkg.name
+        } for ${selectedDate?.toDateString()} with ${roomType} room accommodation. Please help me finalize the booking.`,
+      },
+    });
+    window.dispatchEvent(chatEvent);
+    setShowCheckoutModal(false);
+  };
+
+  const handleCheckout = () => {
+    setShowCheckoutModal(true);
+  };
 
   const handleBooking = () => {
     const chatEvent = new CustomEvent("openChat", {
@@ -262,7 +301,6 @@ const PackageDetail: React.FC = () => {
                   <MapPin className="h-4 w-4 mr-1" />
                   {pkg.destination}
                 </div>
-
                 <div className="flex items-center justify-between text-sm text-gray-600">
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
@@ -274,10 +312,8 @@ const PackageDetail: React.FC = () => {
                   </div>
                 </div>
               </CardHeader>
-
               <CardContent>
                 <p className="text-gray-600 mb-6">{pkg.description}</p>
-
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-800 mb-3">
                     Tour Highlights:
@@ -294,7 +330,6 @@ const PackageDetail: React.FC = () => {
                     ))}
                   </div>
                 </div>
-
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-3">
                     Package Includes:
@@ -320,7 +355,6 @@ const PackageDetail: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-xl">Book Your Adventure</CardTitle>
               </CardHeader>
-
               <CardContent className="space-y-6">
                 <div className="text-center">
                   <span className="text-3xl font-bold text-green-600">
@@ -331,7 +365,6 @@ const PackageDetail: React.FC = () => {
                   </span>
                   <div className="text-sm text-gray-500">per person</div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <CalendarIcon className="h-4 w-4 inline mr-1" />
@@ -344,7 +377,6 @@ const PackageDetail: React.FC = () => {
                     className="rounded-md border"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Room Type
@@ -377,10 +409,16 @@ const PackageDetail: React.FC = () => {
                 </div>
 
                 <Button
+                  onClick={handleCheckout}
+                  className="w-full bg-red-600 hover:bg-red-700 text-lg py-3"
+                >
+                  Book Now
+                </Button>
+                <Button
                   onClick={handleBooking}
                   className="w-full bg-red-600 hover:bg-red-700 text-lg py-3"
                 >
-                  Book Now - Chat with AI Assistant
+                  Book Now - AI Checkout
                 </Button>
 
                 <div className="text-center text-sm text-gray-500">
@@ -392,6 +430,164 @@ const PackageDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {showCheckoutModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Complete Your Booking
+            </h2>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <div className="flex items-center">
+                <span className="px-3 py-2 bg-gray-100 border border-r-0 rounded-l-md">
+                  +251
+                </span>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                  placeholder="912345678"
+                  maxLength={9}
+                  className="w-full px-3 py-2 border rounded-r-md"
+                />
+              </div>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+
+              <label className="block text-sm font-medium text-gray-700">
+                Upload Passport
+              </label>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={(e) => setPassportFile(e.target.files?.[0] || null)}
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <label className="block text-sm font-medium text-gray-700">
+                Nationality
+              </label>
+              <select
+                value={nationality}
+                onChange={(e) => setNationality(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+              >
+                <option value="">Select your country</option>
+                {/* Map over the imported countries array */}
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex justify-between items-center mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Adults
+                  </label>
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => setAdults(Math.max(1, adults - 1))}
+                      size="sm"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                    >
+                      -
+                    </Button>
+                    <span className="px-3">{adults}</span>
+                    <Button
+                      onClick={() => setAdults(adults + 1)}
+                      size="sm"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Kids
+                  </label>
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => setKids(Math.max(0, kids - 1))}
+                      size="sm"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                    >
+                      -
+                    </Button>
+                    <span className="px-3">{kids}</span>
+                    <Button
+                      onClick={() => setKids(kids + 1)}
+                      size="sm"
+                      className="bg-red-600 text-white hover:bg-red-700"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Room Type
+              </label>
+              <div className="bg-gray-100 px-3 py-2 rounded-md">{roomType}</div>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Date
+              </label>
+              <div className="bg-gray-100 px-3 py-2 rounded-md">
+                {selectedDate?.toDateString()}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button
+                variant="ghost"
+                onClick={() => setShowCheckoutModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitCheckout}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                disabled={
+                  !userName ||
+                  !email.includes("@") ||
+                  phone.length !== 9 ||
+                  !passportFile
+                }
+              >
+                Confirm Booking
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
       <ChatBar />

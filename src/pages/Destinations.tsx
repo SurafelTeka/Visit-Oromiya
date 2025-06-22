@@ -152,6 +152,7 @@ const Destinations: React.FC = () => {
     window.dispatchEvent(chatEvent);
   };
 
+  
   return (
     <div className="min-h-screen">
       <Navigation />
