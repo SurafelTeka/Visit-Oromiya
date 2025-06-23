@@ -162,24 +162,35 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-2xl animate-pulse"
+          className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-2xl animate-pulse" // Reverted to original color
         >
           <Mic className="h-6 w-6 text-white" />
         </Button>
       )}
 
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 z-50 w-96 h-[500px] flex flex-col shadow-2xl bg-white border-2 border-red-200">
+        <Card
+          className="fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl bg-white border-2 border-red-200 /* Reverted to original color */
+          w-[calc(100vw-3rem)] h-[calc(100vh-3rem)] /* Mobile: Responsive width and height, leaving 1.5rem margin on all sides */
+          max-w-md max-h-[500px]                  /* Limit max size on mobile/small tablets to feel like a floating box */
+          md:w-96 md:h-[500px]                     /* Desktop: Revert to original fixed size */
+          rounded-lg"
+        >
           <div className="flex items-center justify-between p-4 border-b bg-red-600 text-white rounded-t-lg">
+            {" "}
+            {/* Reverted to original color */}
             <div>
               <h3 className="font-bold">Oromia AI Assistant</h3>
-              <p className="text-xs text-red-100">Your expert travel guide</p>
+              <p className="text-xs text-red-100">
+                Your expert travel guide
+              </p>{" "}
+              {/* Reverted to original color */}
             </div>
             <Button
               onClick={() => setIsOpen(false)}
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-red-700 rounded-full"
+              className="text-white hover:bg-red-700 rounded-full" // Reverted to original color
             >
               <X className="h-4 w-4" />
             </Button>
@@ -194,9 +205,9 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
                 }`}
               >
                 <div
-                  className={`max-w-xs p-3 rounded-lg text-sm shadow-sm ${
+                  className={`max-w-[80%] p-3 rounded-lg text-sm shadow-sm ${
                     message.isUser
-                      ? "bg-red-600 text-white rounded-br-none"
+                      ? "bg-red-600 text-white rounded-br-none" // Reverted to original color
                       : "bg-white text-gray-800 border border-gray-200 rounded-bl-none"
                   }`}
                 >
@@ -207,7 +218,7 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
             {/* Loading indicator */}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-xs p-3 rounded-lg text-sm shadow-sm bg-gray-200 text-gray-800 border border-gray-200 rounded-bl-none">
+                <div className="max-w-[80%] p-3 rounded-lg text-sm shadow-sm bg-gray-200 text-gray-800 border border-gray-200 rounded-bl-none">
                   <span className="animate-pulse">AI is typing...</span>
                 </div>
               </div>
@@ -223,19 +234,18 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
                 placeholder="Ask about tours, destinations..."
                 onKeyPress={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
-                    // Prevent new line on Enter
-                    e.preventDefault(); // Prevent default Enter behavior (e.g., form submission)
+                    e.preventDefault();
                     handleSendMessage();
                   }
                 }}
-                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
-                disabled={isLoading} // Disable input while loading
+                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500" // Reverted to original color
+                disabled={isLoading}
               />
               <Button
                 onClick={handleSendMessage}
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 px-4"
-                disabled={isLoading || !inputValue.trim()} // Disable send button if loading or input is empty
+                disabled={isLoading || !inputValue.trim()}
               >
                 <Send className="h-4 w-4" />
               </Button>
