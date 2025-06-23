@@ -84,7 +84,7 @@ const CartPage: React.FC = () => {
             <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
             <div className="mt-6">
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={() => navigate(`/checkout/${cartItems[0].id}`)}
                 className="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-indigo-700"
               >
                 Checkout

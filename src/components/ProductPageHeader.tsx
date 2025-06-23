@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { ShoppingCart, MapPin } from 'lucide-react';
 
 const ProductPageHeader: React.FC = () => {
   const navigate = useNavigate();
@@ -26,12 +27,12 @@ const ProductPageHeader: React.FC = () => {
               throw new Error('Failed to fetch address.');
             }
             const data = await response.json();
-            if (data && data.locality) {
-                const locality = data.locality;
-                const placeId = data.localityInfo?.administrative?.find(a => a.name === locality)?.wikidataId || 'N/A';
-                setLocation(`Deliver to ${locality} (${placeId})`);
+            if (data) {
+              // Compose a general address string
+              const addressParts = [data.locality, data.principalSubdivision, data.countryName].filter(Boolean);
+              setLocation(`Deliver to ${addressParts.join(', ')}`);
             } else {
-                throw new Error('Failed to parse address.');
+              throw new Error('Failed to parse address.');
             }
           } catch (err) {
             setError('Could not fetch location. Please try again.');
@@ -63,11 +64,11 @@ const ProductPageHeader: React.FC = () => {
         {/* Deliver to */}
         <button
           onClick={() => window.location.reload()}
-          className="hidden md:flex items-center gap-1 text-sm text-gray-600"
+          className="hidden md:flex items-center gap-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full px-4 py-1 shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-400"
           title={error || 'Click to refresh location'}
         >
-          <span className="material-icons text-base">location_on</span>
-          <span>{location}</span>
+          <MapPin className="w-4 h-4 text-red-500" />
+          <span className="truncate max-w-[180px] font-medium">{location}</span>
         </button>
 
         {/* Search Bar */}
@@ -85,8 +86,9 @@ const ProductPageHeader: React.FC = () => {
           <button
             onClick={() => navigate('/cart')}
             className="relative hover:text-red-600 flex items-center"
+            aria-label="View cart"
           >
-            <span className="material-icons">shopping_cart</span>
+            <ShoppingCart className="w-6 h-6" />
             {getCartCount() > 0 && (
               <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
                 {getCartCount()}
