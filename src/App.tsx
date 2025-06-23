@@ -21,6 +21,7 @@ import TodaysPicks from "./pages/TodaysPicks";
 import NewArrivals from "./pages/NewArrivals";
 import CulturalFinds from "./pages/CulturalFinds";
 import HandmadeTreasures from "./pages/HandmadeTreasures";
+import CheckoutPage from "./pages/CheckoutPage";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +40,7 @@ const App = () => (
               <Route path="/ecommerce" element={<Ecommerce />} />
               <Route path="/package/:id" element={<PackageDetail />} />
               <Route path="/packages" element={<Index />} />
-              <Route path="/checkout/:packageId" element={<Checkout />} />
+              <Route path="/checkout/:packageId" element={<CheckoutPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
               <Route path="/product/:id" element={<ProductPage />} />
