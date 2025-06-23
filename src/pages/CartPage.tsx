@@ -83,12 +83,17 @@ const CartPage: React.FC = () => {
             </div>
             <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
             <div className="mt-6">
-              <button
-                onClick={() => navigate(`/checkout/${cartItems[0].id}`)}
-                className="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-indigo-700"
-              >
-                Checkout
-              </button>
+            <button
+  onClick={() =>
+    navigate(`/checkout`, {
+      state: { total: getCartTotal() },
+    })
+  }
+  className="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-indigo-700"
+>
+  Checkout
+</button>
+
             </div>
             <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
               <p>
