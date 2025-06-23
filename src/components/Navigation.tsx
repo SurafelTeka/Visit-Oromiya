@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Navigation: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const Navigation: React.FC = () => {
               onClick={() => navigate("/ecommerce")}
               className="text-white hover:text-green-200 transition-colors"
             >
-              E commerce
+              Zenbil
             </button>
             <Button
               onClick={() => navigate("/admin")}
