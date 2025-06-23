@@ -439,20 +439,19 @@ const PackageDetail: React.FC = () => {
       {showCheckoutModal && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={closeModal} // <--- Add this onClick handler
+          onClick={closeModal}
         >
           <div
-            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto relative" // <--- Add 'relative' here for positioning the X button
-            onClick={(e) => e.stopPropagation()} // <--- Add this to prevent clicks inside from closing the modal
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* 2. Where to add the X button at the top of the form: */}
             <Button
               variant="ghost"
               size="sm"
               className="absolute top-2 right-2 p-1 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              onClick={closeModal} // <--- This button closes the modal
+              onClick={closeModal}
             >
-              <X className="h-5 w-5" /> {/* Lucide-react X icon */}
+              <X className="h-5 w-5" />
             </Button>
 
             <h2 className="text-xl font-semibold text-gray-800">

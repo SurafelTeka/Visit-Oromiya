@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-// import { Send, MessageCircle, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react"; // Import useRef
 import { Send, Mic, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,60 +26,111 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // New state for loading indicator
 
+  // Ref for auto-scrolling the chat messages
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Define your API endpoint here
+  // IMPORTANT: Change this to your actual backend URL when deployed!
+  const API_ENDPOINT = "http://localhost:5000/api/chat"; // Example: Adjust port/domain as needed
+
+  // Function to scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Function to send message to the actual AI backend
+  const sendMessageToAI = async (messageText: string) => {
+    if (!messageText.trim()) return; // Prevent sending empty messages
+
+    setIsLoading(true); // Show typing indicator
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add any authorization headers if your API requires them (e.g., Bearer Token)
+          // 'Authorization': `Bearer YOUR_API_KEY`,
+        },
+        body: JSON.stringify({ message: messageText }),
+      });
+
+      if (!response.ok) {
+        // Handle HTTP errors
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown server error" }));
+        throw new Error(
+          `Server error: ${response.status} - ${
+            errorData.message || "Something went wrong"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      const aiResponseText = data.response; // Assuming the AI response is in data.response
+
+      const aiMessage: Message = {
+        id: new Date().getTime(), // Use a more unique ID, like timestamp
+        text: aiResponseText,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Error sending message to AI:", error);
+      const errorMessage: Message = {
+        id: new Date().getTime(),
+        text: "Oops! I'm having trouble connecting right now. Please try again later.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false); // Hide typing indicator
+    }
+  };
+
+  const handleSendMessage = async () => {
+    // Make this async
+    if (!inputValue.trim()) return;
+
+    const userMessage: Message = {
+      id: new Date().getTime(), // Using timestamp for unique ID
+      text: inputValue,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]); // Add user message instantly
+    const currentInputToSend = inputValue; // Capture current value before clearing
+    setInputValue(""); // Clear input field immediately
+
+    // Send the captured user message to the AI
+    await sendMessageToAI(currentInputToSend);
+  };
+
+  // Effect to listen for custom "openChat" event
   useEffect(() => {
     const handleOpenChat = (event: CustomEvent) => {
       setIsOpen(true);
       if (event.detail?.message) {
-        setInputValue(event.detail.message);
+        // Automatically send the message received from CustomEvent to AI
+        setInputValue(""); // Clear any existing input value before sending new one
+        sendMessageToAI(event.detail.message);
       }
     };
 
     window.addEventListener("openChat", handleOpenChat as EventListener);
     return () =>
       window.removeEventListener("openChat", handleOpenChat as EventListener);
-  }, []);
+  }, []); // Run once on mount
 
-  const simulateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-
-    if (lowerMessage.includes("bale") || lowerMessage.includes("mountain")) {
-      return "🏔️ Bale Mountains National Park is Ethiopia's premier highland destination! Our 5-day adventure package ($899) includes guided wildlife tracking. Would you like to book?";
-    }
-    if (lowerMessage.includes("wenchi") || lowerMessage.includes("crater")) {
-      return "🌊 Wenchi Crater Lake is a stunning volcanic caldera! Our 3-day escape package ($599) includes boat rides and hot springs. Ready to book?";
-    }
-    if (lowerMessage.includes("book") || lowerMessage.includes("reserve")) {
-      return "📅 Great! To book your Oromia adventure, I need your preferred dates and number of travelers. What dates work for you?";
-    }
-
-    return "🌍 Welcome to Oromia! I can help you discover amazing destinations and book tour packages. What interests you most?";
-  };
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
-
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: inputValue,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    const currentInput = inputValue;
-    setInputValue("");
-
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: messages.length + 2,
-        text: simulateAIResponse(currentInput),
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 1000);
-  };
+  // Effect to scroll to bottom whenever messages change or loading state changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]); // Scroll when messages update or loading state changes
 
   if (isInline) {
     return (
@@ -98,6 +148,7 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
             onClick={handleSendMessage}
             size="sm"
             className="bg-green-600 hover:bg-green-700 rounded-full px-4"
+            disabled={isLoading} // Disable send button while loading
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -153,6 +204,15 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
                 </div>
               </div>
             ))}
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-xs p-3 rounded-lg text-sm shadow-sm bg-gray-200 text-gray-800 border border-gray-200 rounded-bl-none">
+                  <span className="animate-pulse">AI is typing...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} /> {/* Element to scroll to */}
           </div>
 
           <div className="p-4 border-t bg-white">
@@ -161,13 +221,21 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask about tours, destinations..."
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500 placeholder-white"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    // Prevent new line on Enter
+                    e.preventDefault(); // Prevent default Enter behavior (e.g., form submission)
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
+                disabled={isLoading} // Disable input while loading
               />
               <Button
                 onClick={handleSendMessage}
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 px-4"
+                disabled={isLoading || !inputValue.trim()} // Disable send button if loading or input is empty
               >
                 <Send className="h-4 w-4" />
               </Button>
