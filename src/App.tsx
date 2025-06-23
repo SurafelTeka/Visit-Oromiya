@@ -10,6 +10,17 @@ import NotFound from "./pages/NotFound";
 import Destinations from "./pages/Destinations";
 import PackageDetail from "./pages/PackageDetail";
 import Checkout from "./pages/Checkout";
+import Ecommerce from "./pages/Ecommerce";
+import ProductPage from "./pages/ProductPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import { CartProvider } from "./contexts/CartContext";
+import CartPage from "./pages/CartPage";
+import TopDeals from "./pages/TopDeals";
+import TodaysPicks from "./pages/TodaysPicks";
+import NewArrivals from "./pages/NewArrivals";
+import CulturalFinds from "./pages/CulturalFinds";
+import HandmadeTreasures from "./pages/HandmadeTreasures";
 
 const queryClient = new QueryClient();
 
@@ -17,20 +28,33 @@ const App = () => (
   <ThemeProvider defaultTheme="light">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/destination/:id" element={<Destinations />} />
-            <Route path="/package/:id" element={<PackageDetail />} />
-            <Route path="/packages" element={<Index />} />
-            <Route path="/checkout/:packageId" element={<Checkout />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/destinations" element={<Destinations />} />
+              <Route path="/destination/:id" element={<Destinations />} />
+              <Route path="/ecommerce" element={<Ecommerce />} />
+              <Route path="/package/:id" element={<PackageDetail />} />
+              <Route path="/packages" element={<Index />} />
+              <Route path="/checkout/:packageId" element={<Checkout />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="/product/:id" element={<ProductPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/top-deals" element={<TopDeals />} />
+              <Route path="/todays-picks" element={<TodaysPicks />} />
+              <Route path="/new-arrivals" element={<NewArrivals />} />
+              <Route path="/cultural-finds" element={<CulturalFinds />} />
+              <Route path="/handmade-treasures" element={<HandmadeTreasures />} />
+
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
