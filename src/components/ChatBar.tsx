@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from "react"; // Import useRef
-import { Send, Mic, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Send, Mic, X, User, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
-  id: number;
-  text: string;
-  isUser: boolean;
+  id: string;
+  role: "user" | "assistant";
+  content: string;
   timestamp: Date;
 }
 
@@ -15,140 +16,260 @@ interface ChatBarProps {
   isInline?: boolean;
 }
 
+// Helper function to convert markdown bold to HTML bold
+const formatMessage = (text: string) => {
+  // Replace **text** with <strong>text</strong>
+  const withBold = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+  // Replace single asterisks with <strong> only if they wrap words (not standalone asterisks)
+  const withSingleBold = withBold.replace(
+    /(^|\s)\*([^*\n]+?)\*($|\s)/g,
+    "$1<strong>$2</strong>$3"
+  );
+
+  return withSingleBold;
+};
+
 const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
-      text: "Hello! I'm your Oromia travel assistant. I can help you explore destinations, tour packages, and booking!",
-      isUser: false,
+      id: "initial-msg-1",
+      role: "assistant",
+      content:
+        "Hello! I'm your Oromia travel assistant. I can help you explore destinations, tour packages, and booking!",
       timestamp: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // New state for loading indicator
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Ref for auto-scrolling the chat messages
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Define your API endpoint here
-  // IMPORTANT: Change this to your actual backend URL when deployed!
-  const API_ENDPOINT = "http://localhost:5000/api/chat"; // Example: Adjust port/domain as needed
+  const [scrollTrigger, setScrollTrigger] = useState<{
+    type: "open" | "new_ai_reply" | "default_bottom";
+    id?: string;
+  } | null>(null);
 
-  // Function to scroll to the bottom of the chat
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Create ref for sendMessage to avoid closure issues
+  const sendMessageRef = useRef<(message?: string) => Promise<void>>(
+    async () => {}
+  );
 
-  // Function to send message to the actual AI backend
-  const sendMessageToAI = async (messageText: string) => {
-    if (!messageText.trim()) return; // Prevent sending empty messages
+  const GROQ_API_KEY =
+    "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";
 
-    setIsLoading(true); // Show typing indicator
-    try {
-      const response = await fetch(API_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Add any authorization headers if your API requires them (e.g., Bearer Token)
-          // 'Authorization': `Bearer YOUR_API_KEY`,
-        },
-        body: JSON.stringify({ message: messageText }),
-      });
-
-      if (!response.ok) {
-        // Handle HTTP errors
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Unknown server error" }));
-        throw new Error(
-          `Server error: ${response.status} - ${
-            errorData.message || "Something went wrong"
-          }`
-        );
-      }
-
-      const data = await response.json();
-      const aiResponseText = data.response; // Assuming the AI response is in data.response
-
-      const aiMessage: Message = {
-        id: new Date().getTime(), // Use a more unique ID, like timestamp
-        text: aiResponseText,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error("Error sending message to AI:", error);
-      const errorMessage: Message = {
-        id: new Date().getTime(),
-        text: "Oops! I'm having trouble connecting right now. Please try again later.",
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false); // Hide typing indicator
+  const scrollToAbsoluteBottom = () => {
+    const viewport = messagesContainerRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
     }
   };
 
-  const handleSendMessage = async () => {
-    // Make this async
-    if (!inputValue.trim()) return;
+  const scrollToAiReplyStart = () => {
+    const viewport = messagesContainerRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (!viewport) return;
+
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.role !== "assistant") {
+      scrollToAbsoluteBottom();
+      return;
+    }
+
+    const aiReplyElement = messageRefs.current[lastMessage.id];
+    if (aiReplyElement) {
+      let targetElement = aiReplyElement;
+
+      const aiMessageIndex = messages.length - 1;
+      if (aiMessageIndex > 0 && messages[aiMessageIndex - 1].role === "user") {
+        const userMessageBefore = messages[aiMessageIndex - 1];
+        const userMessageElement = messageRefs.current[userMessageBefore.id];
+
+        if (userMessageElement) {
+          targetElement = userMessageElement;
+        }
+      }
+
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      scrollToAbsoluteBottom();
+    }
+  };
+
+  const callGroqAPI = async (message: string): Promise<string> => {
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an expert Oromia travel assistant. You provide information about Oromia Region in Ethiopia, including destinations, tour packages, cultural sites, natural attractions, traditional products, and booking related queries for tourism within Oromia. You do NOT discuss any other topics - if asked about anything outside of Oromia region travel, politely redirect the conversation back to Oromia travel experiences. Be helpful, enthusiastic, and knowledgeable about Oromia.",
+              },
+              ...messages
+                .slice(-5)
+                .map((msg) => ({ role: msg.role, content: msg.content })),
+              { role: "user", content: message },
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("API Error:", response.status, errorData);
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error("Invalid API response format");
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Groq API Error:", error);
+      throw error;
+    }
+  };
+
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue;
+
+    if (!textToSend.trim()) return;
 
     const userMessage: Message = {
-      id: new Date().getTime(), // Using timestamp for unique ID
-      text: inputValue,
-      isUser: true,
+      id: Date.now().toString(),
+      role: "user",
+      content: textToSend,
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]); // Add user message instantly
-    const currentInputToSend = inputValue; // Capture current value before clearing
-    setInputValue(""); // Clear input field immediately
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsLoading(true);
 
-    // Send the captured user message to the AI
-    await sendMessageToAI(currentInputToSend);
+    try {
+      const aiResponseText = await callGroqAPI(textToSend);
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: aiResponseText,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setScrollTrigger({ type: "new_ai_reply", id: assistantMessage.id });
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "I apologize, but I'm having trouble connecting right now. Please try asking about Oromia safari destinations again.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      setScrollTrigger({ type: "default_bottom" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Effect to listen for custom "openChat" event
+  // Update sendMessage ref on change
   useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
+
+  // Setup event listener only for floating chat
+  useEffect(() => {
+    if (isInline) return;
+
     const handleOpenChat = (event: CustomEvent) => {
       setIsOpen(true);
       if (event.detail?.message) {
-        // Automatically send the message received from CustomEvent to AI
-        setInputValue(""); // Clear any existing input value before sending new one
-        sendMessageToAI(event.detail.message);
+        setInputValue("");
+        sendMessageRef.current(event.detail.message);
+      } else {
+        setScrollTrigger({ type: "open" });
       }
     };
 
     window.addEventListener("openChat", handleOpenChat as EventListener);
-    return () =>
+    return () => {
       window.removeEventListener("openChat", handleOpenChat as EventListener);
-  }, []); // Run once on mount
+    };
+  }, [isInline]);
 
-  // Effect to scroll to bottom whenever messages change or loading state changes
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]); // Scroll when messages update or loading state changes
+    if (!scrollTrigger || !isOpen) return;
+
+    const timer = setTimeout(() => {
+      if (
+        scrollTrigger.type === "open" ||
+        scrollTrigger.type === "default_bottom"
+      ) {
+        scrollToAbsoluteBottom();
+      } else if (scrollTrigger.type === "new_ai_reply" && scrollTrigger.id) {
+        scrollToAiReplyStart();
+      }
+      setScrollTrigger(null);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [scrollTrigger, isOpen, messages]);
 
   if (isInline) {
     return (
       <div className="w-full max-w-md mx-auto">
-        <div className="flex items-center space-x-8 bg-transparent backdrop-blur-sm rounded-full p-3 border border-white/80 shadow-lg">
+        <div className="flex items-center space-x-8 bg-transparent backdrop-blur-sm rounded-full p-4 border border-white/80 shadow-lg">
           <Mic className="h-5 w-5 text-white ml-2" />
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask me anything about Oromia tours..."
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            className="flex-1 bg-transparent text-white placeholder-white placeholder:text-white border-none focus:outline-none focus:ring-0"
+            placeholder="Ask me about Oromia Tours..."
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                window.dispatchEvent(
+                  new CustomEvent("openChat", {
+                    detail: { message: inputValue },
+                  })
+                );
+                setInputValue("");
+              }
+            }}
+            className="flex-1 bg-transparent text-white placeholder-white placeholder:text-white
+                       border-none focus:outline-none focus:ring-0
+                       focus:shadow-none focus:border-transparent
+                       text-md placeholder:text-md"
           />
           <Button
-            onClick={handleSendMessage}
+            onClick={() => {
+              window.dispatchEvent(
+                new CustomEvent("openChat", {
+                  detail: { message: inputValue },
+                })
+              );
+              setInputValue("");
+            }}
             size="sm"
             className="bg-green-600 hover:bg-green-700 rounded-full px-4"
-            disabled={isLoading} // Disable send button while loading
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -161,8 +282,11 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
     <>
       {!isOpen && (
         <Button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-2xl animate-pulse" // Reverted to original color
+          onClick={() => {
+            setIsOpen(true);
+            setScrollTrigger({ type: "open" });
+          }}
+          className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-2xl animate-pulse"
         >
           <Mic className="h-6 w-6 text-white" />
         </Button>
@@ -170,79 +294,115 @@ const ChatBar: React.FC<ChatBarProps> = ({ isInline = false }) => {
 
       {isOpen && (
         <Card
-          className="fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl bg-white border-2 border-red-200 /* Reverted to original color */
-          w-[calc(100vw-3rem)] h-[calc(100vh-3rem)] /* Mobile: Responsive width and height, leaving 1.5rem margin on all sides */
-          max-w-md max-h-[500px]                  /* Limit max size on mobile/small tablets to feel like a floating box */
-          md:w-96 md:h-[500px]                     /* Desktop: Revert to original fixed size */
+          className="fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl bg-white border-2 border-red-200
+          w-[calc(100vw-3rem)] h-[calc(100vh-3rem)]
+          max-w-md max-h-[500px]
+          md:w-96 md:h-[500px]
           rounded-lg"
         >
           <div className="flex items-center justify-between p-4 border-b bg-red-600 text-white rounded-t-lg">
-            {" "}
-            {/* Reverted to original color */}
-            <div>
+            <div className="flex items-center gap-2">
+              <Bot className="w-6 h-6" />
               <h3 className="font-bold">Oromia AI Assistant</h3>
-              <p className="text-xs text-red-100">
-                Your expert travel guide
-              </p>{" "}
-              {/* Reverted to original color */}
             </div>
             <Button
               onClick={() => setIsOpen(false)}
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-red-700 rounded-full" // Reverted to original color
+              className="text-white hover:bg-red-700 rounded-full"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.isUser ? "justify-end" : "justify-start"
-                }`}
-              >
+          <ScrollArea className="flex-1 p-4" ref={messagesContainerRef}>
+            <div className="space-y-4">
+              {messages.map((message) => (
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg text-sm shadow-sm ${
-                    message.isUser
-                      ? "bg-red-600 text-white rounded-br-none" // Reverted to original color
-                      : "bg-white text-gray-800 border border-gray-200 rounded-bl-none"
+                  key={message.id}
+                  ref={(el) => {
+                    messageRefs.current[message.id] = el;
+                  }}
+                  className={`flex gap-3 ${
+                    message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {message.text}
+                  <div
+                    className={`flex gap-2 max-w-[80%] ${
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        message.role === "user" ? "bg-red-600" : "bg-gray-200"
+                      }`}
+                    >
+                      {message.role === "user" ? (
+                        <User className="w-4 h-4 text-white" />
+                      ) : (
+                        <Bot className="w-4 h-4 text-gray-600" />
+                      )}
+                    </div>
+                    <div
+                      className={`p-3 rounded-lg ${
+                        message.role === "user"
+                          ? "bg-red-600 text-white"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      <div
+                        className="text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: formatMessage(message.content),
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {/* Loading indicator */}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] p-3 rounded-lg text-sm shadow-sm bg-gray-200 text-gray-800 border border-gray-200 rounded-bl-none">
-                  <span className="animate-pulse">AI is typing...</span>
+              ))}
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <div className="flex space-x-1">
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} /> {/* Element to scroll to */}
-          </div>
+              )}
+            </div>
+          </ScrollArea>
 
           <div className="p-4 border-t bg-white">
             <div className="flex space-x-2">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about tours, destinations..."
+                placeholder="Ask about Oromia tours, destinations..."
                 onKeyPress={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendMessage();
+                    sendMessage();
                   }
                 }}
-                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500" // Reverted to original color
+                className="flex-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
                 disabled={isLoading}
               />
               <Button
-                onClick={handleSendMessage}
+                onClick={() => sendMessage()}
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 px-4"
                 disabled={isLoading || !inputValue.trim()}
