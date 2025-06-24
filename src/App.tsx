@@ -9,7 +9,9 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Destinations from "./pages/Destinations";
 import PackageDetail from "./pages/PackageDetail";
-import Checkout from "./pages/Checkout";
+import Checkout from "./pages/CheckoutPage"; // Note: You have Checkout and CheckoutPage imported, might be a duplicate
+import TourPackages from "./components/TourPackages"; // Correctly imported
+import SignInRegisterPage from "./pages/SignInRegisterPage";
 import Ecommerce from "./pages/Ecommerce";
 import ProductPage from "./pages/ProductPage";
 import Login from "./pages/Login";
@@ -21,7 +23,7 @@ import TodaysPicks from "./pages/TodaysPicks";
 import NewArrivals from "./pages/NewArrivals";
 import CulturalFinds from "./pages/CulturalFinds";
 import HandmadeTreasures from "./pages/HandmadeTreasures";
-import CheckoutPage from "./pages/CheckoutPage";
+import CheckoutPage from "./pages/CheckoutPage"; // Duplicate import if Checkout is the same
 import ChapaSuccess from "./pages/ChapaSuccess";
 import ChapaFail from "./pages/ChapaFail";
 import { ToastContainer } from "react-toastify";
@@ -49,8 +51,11 @@ const App = () => (
               <Route path="/destination/:id" element={<Destinations />} />
               <Route path="/ecommerce" element={<Ecommerce />} />
               <Route path="/package/:id" element={<PackageDetail />} />
-              <Route path="/packages" element={<Index />} />
-              <Route path="/checkout/" element={<CheckoutPage />} />
+              {/* REMOVED: <Route path="/packages" element={<Index />} /> */}
+              <Route path="/packages" element={<TourPackages />} />{" "}
+              {/* KEPT THIS ONE */}
+              <Route path="/checkout/" element={<CheckoutPage />} />{" "}
+              {/* Assuming this is the correct CheckoutPage */}
               <Route path="/booking-checkout/" element={<BookingChapaCheckoutPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
@@ -60,16 +65,14 @@ const App = () => (
               <Route path="/todays-picks" element={<TodaysPicks />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/cultural-finds" element={<CulturalFinds />} />
-              <Route
-                path="/handmade-treasures"
-                element={<HandmadeTreasures />}
-              />
+              <Route path="/handmade-treasures" element={<HandmadeTreasures />} />
 
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/success" element={<ChapaSuccess />} />
               <Route path="/booking-success" element={<BookingSuccess />} />
               <Route path="/fail" element={<ChapaFail />} />
+              <Route path="/signin-register" element={<SignInRegisterPage />} />
             </Routes>
           </BrowserRouter>
         </CartProvider>

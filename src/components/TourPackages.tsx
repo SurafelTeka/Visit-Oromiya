@@ -12,6 +12,9 @@ import {
   Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Navigation from "@/components/Navigation"; // Import Navigation
+import ECommerceFooter from "@/components/ECommerceFooter"; // Import ECommerceFooter
+import ChatBar from "@/components/ChatBar"; // Import ChatBar
 
 const TourPackages: React.FC = () => {
   const navigate = useNavigate();
@@ -137,129 +140,136 @@ const TourPackages: React.FC = () => {
   };
 
   return (
-    <section id="packages" className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            Exclusive Tour Packages
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+    <div className="min-h-screen">
+      <Navigation /> {/* Add Navigation component at the top */}
+      {/* Tour Packages specific banner (like the one in Destinations) */}
+      <div className="bg-red-600 text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold mb-4">Exclusive Tour Packages</h1>
+          <p className="text-xl max-w-2xl mx-auto">
             Carefully crafted experiences that showcase the best of Oromia with
             expert guides and premium accommodations.
           </p>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {packages.map((pkg) => (
-            <Card
-              key={pkg.id}
-              className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 hover:border-green-200"
-            >
-              <div className="relative h-48">
-                <img
-                  src={pkg.image}
-                  alt={pkg.name}
-                  className="w-full h-full object-cover"
-                />
-                <Badge className="absolute top-4 left-4 bg-red-600 hover:bg-red-700">
-                  Save ETB {pkg.originalPrice - pkg.price}
-                </Badge>
-                <div className="absolute top-4 right-4 bg-white rounded-full px-2 py-1 flex items-center space-x-1">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-semibold">{pkg.rating}</span>
-                  <span className="text-xs text-gray-500">({pkg.reviews})</span>
-                </div>
-              </div>
-
-              <CardHeader>
-                <CardTitle className="text-xl text-gray-800">
-                  {pkg.name}
-                </CardTitle>
-                <div className="flex items-center text-gray-600 text-sm mb-2">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {pkg.destination}
-                </div>
-                <div className="flex items-center text-gray-500 text-sm mb-2">
-                  <Building2 className="h-4 w-4 mr-1" />
-                  {pkg.agency}
-                </div>
-
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {pkg.duration}
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1" />
-                    {pkg.groupSize}
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="mb-4">
-                  <h4 className="font-semibold text-gray-800 mb-2">
-                    Tour Highlights:
-                  </h4>
-                  <div className="space-y-1">
-                    {pkg.highlights.slice(0, 3).map((highlight, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center text-sm text-gray-600"
-                      >
-                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                        {highlight}
-                      </div>
-                    ))}
+      </div>
+      <section id="packages" className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            {packages.map((pkg) => (
+              <Card
+                key={pkg.id}
+                className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 hover:border-green-200"
+              >
+                <div className="relative h-48">
+                  <img
+                    src={pkg.image}
+                    alt={pkg.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <Badge className="absolute top-4 left-4 bg-red-600 hover:bg-red-700">
+                    Save ETB {pkg.originalPrice - pkg.price}
+                  </Badge>
+                  <div className="absolute top-4 right-4 bg-white rounded-full px-2 py-1 flex items-center space-x-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm font-semibold">{pkg.rating}</span>
+                    <span className="text-xs text-gray-500">
+                      ({pkg.reviews})
+                    </span>
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <span className="text-2xl font-bold text-green-600">
-                        ETB {pkg.price}
-                      </span>
-                      <span className="text-sm text-gray-500 line-through ml-2">
-                        ETB {pkg.originalPrice}
-                      </span>
-                      <div className="text-xs text-gray-500">per person</div>
+                <CardHeader>
+                  <CardTitle className="text-xl text-gray-800">
+                    {pkg.name}
+                  </CardTitle>
+                  <div className="flex items-center text-gray-600 text-sm mb-2">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {pkg.destination}
+                  </div>
+                  <div className="flex items-center text-gray-500 text-sm mb-2">
+                    <Building2 className="h-4 w-4 mr-1" />
+                    {pkg.agency}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {pkg.duration}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1" />
+                      {pkg.groupSize}
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Tour Highlights:
+                    </h4>
+                    <div className="space-y-1">
+                      {pkg.highlights.slice(0, 3).map((highlight, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center text-sm text-gray-600"
+                        >
+                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                          {highlight}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleViewMore(pkg.id)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View More
-                    </Button>
-                    <Button
-                      onClick={() => handleChatAssistant(pkg.name)}
-                      variant="outline"
-                      className="flex-1 border-red-600 text-red-600 hover:bg-red-50"
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Chat AI
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <span className="text-2xl font-bold text-green-600">
+                          ETB {pkg.price}
+                        </span>
+                        <span className="text-sm text-gray-500 line-through ml-2">
+                          ETB {pkg.originalPrice}
+                        </span>
+                        <div className="text-xs text-gray-500">per person</div>
+                      </div>
+                    </div>
 
-        <div className="text-center mt-12">
-          <Button
-            onClick={() => navigate("/packages")}
-            className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
-          >
-            View All Packages
-          </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleViewMore(pkg.id)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View More
+                      </Button>
+                      <Button
+                        onClick={() => handleChatAssistant(pkg.name)}
+                        variant="outline"
+                        className="flex-1 border-red-600 text-red-600 hover:bg-red-50"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Chat AI
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Button
+              onClick={() => navigate("/packages")} // This button navigates to the same page, typically it would navigate to a different view like "all packages" if this is a section. If this IS the full packages page, you might remove it or change its functionality.
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
+            >
+              View All Packages
+            </Button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <ECommerceFooter /> {/* Add ECommerceFooter component at the bottom */}
+      <ChatBar /> {/* Add ChatBar component */}
+    </div>
   );
 };
 
