@@ -52,7 +52,7 @@ const AddressStep = ({ form, setForm }) => {
       // Auto-send to backend
       const token = localStorage.getItem("auth_token");
       if (token) {
-        fetch("http://localhost:3000/api/addresses", {
+        fetch("http://localhost:4000/api/addresses", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

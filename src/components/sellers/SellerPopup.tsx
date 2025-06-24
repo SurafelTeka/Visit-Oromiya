@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import BasicInfo from "./stage1/BasicInfo";
-import OtpVerification from "./stage2/OtpVerification";
 import AddressStep from "./stage3/AddressStep";
 import Documents from "./stage4/Documents";
 import Subscription from "./stage5/Subscription";
 
-const steps = ["Basic Info", "Verify OTP", "Auto Address", "Documents", "Subscription"];
+const steps = ["Basic Info", "Auto Address", "Documents", "Subscription"];
 
 const SellerPopup = ({ onClose }) => {
   const [step, setStep] = useState(0);
@@ -23,7 +22,7 @@ const SellerPopup = ({ onClose }) => {
     license: null,
     cover_picture: null,
     fayda: null,
-    subscription: ""
+    subscription: "",
   });
 
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ const SellerPopup = ({ onClose }) => {
     const { name, value, files } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: files?.length ? files[0] : value
+      [name]: files?.length ? files[0] : value,
     }));
   };
 
@@ -48,27 +47,46 @@ const SellerPopup = ({ onClose }) => {
         name: form.name.trim(),
         phone_number: formattedPhone,
         password: form.password,
-        role: "seller"
+        role: "seller",
       };
 
       setLoading(true);
-
-      fetch("http://localhost:3000/api/users/register", {
+      fetch("http://localhost:4000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
         .then(async (res) => {
           setLoading(false);
           if (!res.ok) throw new Error("Registration failed");
           const result = await res.json();
           console.log("✅ Registered:", result);
-          setStep((prev) => prev + 1);
+
+          // Proceed to login
+          return fetch("http://localhost:4000/api/users/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone_number: payload.phone_number,
+              password: payload.password,
+            }),
+          });
+        })
+        .then(async (res) => {
+          if (!res.ok) throw new Error("Login failed");
+          const loginResult = await res.json();
+
+          // Store token
+          localStorage.setItem("auth_token", loginResult.token);
+          console.log("🔐 Logged in:", loginResult);
+
+          // Go to next step
+          setStep(1);
         })
         .catch((err) => {
           setLoading(false);
-          console.error("❌ Registration error:", err);
-          alert("Registration failed. Please try again.");
+          console.error("❌ Error:", err);
+          alert("Something went wrong. Please try again.");
         });
 
       return;
@@ -80,15 +98,14 @@ const SellerPopup = ({ onClose }) => {
     }
 
     if (step === 3 && uploading) {
-        alert("Please wait while we finish uploading your documents.");
-        return;
-      }
-      
+      alert("Please wait while we finish uploading your documents.");
+      return;
+    }
+
     if (step < steps.length - 1) {
       setStep((prev) => prev + 1);
     }
   };
-  
 
   const handleBack = () => {
     if (step > 0) {
@@ -101,7 +118,6 @@ const SellerPopup = ({ onClose }) => {
     if (step !== steps.length - 1) return;
 
     if (!form.subscription) {
-      alert("Please select a subscription option before submitting.");
       return;
     }
 
@@ -120,20 +136,17 @@ const SellerPopup = ({ onClose }) => {
       case 0:
         return <BasicInfo form={form} handleChange={handleChange} />;
       case 1:
-        return <OtpVerification form={form} onVerify={() => setStep(2)} />;
-      case 2:
         return <AddressStep form={form} setForm={setForm} />;
-        case 3:
-            return (
-              <Documents
-                form={form}
-                handleChange={handleChange}
-                onUploadStart={() => setUploading(true)}
-                onUploadComplete={() => setUploading(false)}
-              />
-            );
-          
-      case 4:
+      case 2:
+        return (
+          <Documents
+            form={form}
+            handleChange={handleChange}
+            onUploadStart={() => setUploading(true)}
+            onUploadComplete={() => setUploading(false)}
+          />
+        );
+      case 3:
         return <Subscription form={form} handleChange={handleChange} />;
       default:
         return <div className="text-gray-500 text-center">Step not found</div>;
@@ -141,8 +154,6 @@ const SellerPopup = ({ onClose }) => {
   };
 
   const renderNavigation = () => {
-    if (step === 1) return null;
-
     return (
       <div className="flex justify-between items-center pt-6 relative">
         <button
