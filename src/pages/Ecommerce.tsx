@@ -5,6 +5,7 @@ import SellerPopup from "../components/sellers/SellerPopup";
 import ProductPageHeader from "../components/ProductPageHeader";
 import ECommerceFooter from "../components/ECommerceFooter";
 import ImageSliderBanner from "../components/ImageSliderBanner";
+import { useCart } from "../hooks/useCart";
 
 const categories = [
   { name: "Home Decor", icon: "🪑" },
@@ -18,6 +19,8 @@ const Ecommerce: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+
+  const { addToCart } = useCart();
 
   const productsPerPage = 12;
 
@@ -100,7 +103,10 @@ const Ecommerce: React.FC = () => {
                   ⭐ {product.rating} • In stock: {product.stock}
                 </p>
                 <div className="flex gap-2 mt-4">
-                  <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+                  <button
+                    className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                    onClick={() => addToCart(product.id)}
+                  >
                     Add to Cart
                   </button>
                   <button
