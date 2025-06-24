@@ -58,6 +58,15 @@ const Navigation: React.FC = () => {
             >
               Zenbil
             </button>
+            <a
+              href="http://localhost:3000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              MEET CHALA
+            </a>
+
             <Button
               onClick={() => handleNavigate("/admin")}
               variant="outline"

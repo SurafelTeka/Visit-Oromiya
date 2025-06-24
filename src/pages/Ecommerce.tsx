@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sampleProducts, Product } from './fakeProducts';
+import  SellerPopup from "../components/sellers/SellerPopup"
 
 const categories = [
   { name: 'Home Decor', icon: '🪑' },
@@ -9,25 +10,7 @@ const categories = [
   { name: 'Jewelry & Accessories', icon: '💍' },
 ];
 
-const SellerPopup = ({ onClose }: { onClose: () => void }) => (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">Become a Seller</h2>
-      <form className="space-y-3">
-        <input type="text" placeholder="Store Name" className="w-full border px-4 py-2 rounded" />
-        <input type="email" placeholder="Email" className="w-full border px-4 py-2 rounded" />
-        <input type="password" placeholder="Password" className="w-full border px-4 py-2 rounded" />
-        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-          Register Now
-        </button>
-      </form>
-      <button onClick={onClose} className="mt-4 text-center text-gray-500 hover:underline w-full">
-        Cancel
-      </button>
-    </div>
-  </div>
-);
-
+ 
 const Ecommerce: React.FC = () => {
   const [showSellerPopup, setShowSellerPopup] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
