@@ -10,28 +10,40 @@ const AdminSignInModal: React.FC<AdminSignInModalProps> = ({
   onClose,
   onSignInSuccess,
 }) => {
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Keep error state for potential future use or if you want to show a "success" message
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
     setIsLoading(true);
 
-    // --- MODIFIED SIMULATION: Always succeeds ---
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-      onSignInSuccess(); // Always call success callback
+      const res = await fetch("http://localhost:4000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone_number: phone,
+          password: password,
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json();
+        throw new Error(errBody.message || "Login failed. Please try again.");
+      }
+
+      const data = await res.json();
+      localStorage.setItem("auth_token", data.token);
+      console.log("🔐 Logged in successfully:", data);
+      onSignInSuccess();
     } catch (err) {
-      // This catch block might not be hit with the simplified logic,
-      // but it's good practice to keep for actual async operations.
       setError((err as Error).message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
-    // --- End MODIFIED Simulation ---
   };
 
   return (
@@ -45,6 +57,7 @@ const AdminSignInModal: React.FC<AdminSignInModalProps> = ({
         >
           &times;
         </button>
+
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Admin Sign In
         </h2>
@@ -58,24 +71,26 @@ const AdminSignInModal: React.FC<AdminSignInModalProps> = ({
               {error}
             </div>
           )}
+
           <div>
             <label
-              htmlFor="admin-email"
+              htmlFor="admin-phone"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email
+              Phone Number
             </label>
             <input
-              type="email"
-              id="admin-email"
+              type="tel"
+              id="admin-phone"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-oromiaRed focus:border-oromiaRed"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="+2519XXXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
               disabled={isLoading}
             />
           </div>
+
           <div>
             <label
               htmlFor="admin-password"
@@ -94,6 +109,7 @@ const AdminSignInModal: React.FC<AdminSignInModalProps> = ({
               disabled={isLoading}
             />
           </div>
+
           <Button
             type="submit"
             className="w-full bg-oromiaRed text-white py-2 px-4 rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-oromiaRed focus:ring-offset-2 transition-colors duration-200"
