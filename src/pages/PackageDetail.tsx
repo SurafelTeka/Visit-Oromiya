@@ -270,18 +270,7 @@ const PackageDetail: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    // Basic form validation before opening modal
-    if (
-      !userName ||
-      !phone ||
-      !email ||
-      !nationality ||
-      !passportFile ||
-      adults + kids === 0
-    ) {
-      toast.error("Please fill all required fields and upload passport.");
-      return;
-    }
+    
     setShowCheckoutModal(true);
   };
 
