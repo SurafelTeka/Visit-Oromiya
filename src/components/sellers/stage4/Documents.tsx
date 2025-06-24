@@ -17,7 +17,7 @@ const Documents = ({ form, handleChange, onUploadStart, onUploadComplete }) => {
       formData.append("fayda", form.fayda);
 
       try {
-        const res = await fetch("http://localhost:3000/api/information", {
+        const res = await fetch("http://localhost:4000/api/information", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,

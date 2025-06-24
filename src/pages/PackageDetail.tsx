@@ -20,8 +20,6 @@ import ChatBar from "@/components/ChatBar";
 import countries from "../countries.json";
 import Loader from "@/components/Loader";
 
-
-
 const PackageDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -231,7 +229,6 @@ const PackageDetail: React.FC = () => {
   const submitCheckout = async () => {
     setIsLoading(true);
 
-  
     const formData = new FormData();
     formData.append("name", userName);
     formData.append("email", email);
