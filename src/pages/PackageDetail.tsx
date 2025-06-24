@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
+import { toast } from "react-toastify";
 import {
   ArrowLeft,
   Clock,
@@ -17,6 +18,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ChatBar from "@/components/ChatBar";
 import countries from "../countries.json";
+import Loader from "@/components/Loader";
 
 const PackageDetail: React.FC = () => {
   const { id } = useParams();
@@ -35,6 +37,7 @@ const PackageDetail: React.FC = () => {
   const [kids, setKids] = React.useState(0);
 
   const [nationality, setNationality] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const packages = {
     "1": {
@@ -223,27 +226,43 @@ const PackageDetail: React.FC = () => {
     );
   }
 
-  const submitCheckout = () => {
-    console.log({
-      userName,
-      phone,
-      email,
-      passportFile,
-      selectedDate,
-      roomType,
-      adults,
-      kids,
-      nationality,
-    });
-    const chatEvent = new CustomEvent("openChat", {
-      detail: {
-        message: `Hi, my name is ${userName}. I would like to book the ${
-          pkg.name
-        } for ${selectedDate?.toDateString()} with ${roomType} room accommodation. Please help me finalize the booking.`,
-      },
-    });
-    window.dispatchEvent(chatEvent);
-    setShowCheckoutModal(false);
+  const submitCheckout = async () => {
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("name", userName);
+    formData.append("email", email);
+    formData.append("country", nationality);
+    formData.append("accomodation", roomType);
+    formData.append("phone_number", phone);
+    formData.append("no_of_guests", Number(adults) + Number(kids));
+    formData.append("passport", passportFile);
+    formData.append("has_paid", true);
+
+    try {
+      const response = await fetch("http://localhost:4000/api/checkouts", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success("🎉 Checkout successful!");
+        navigate("/booking-checkout", {
+          state: { total: pkg.price }, // This will be received by useLocation on the checkout page
+        });
+      } else {
+        toast.error(
+          `🚫 Submission failed: ${result.message || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      toast.error("🔥 Backend submission error. Please try again!");
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCheckout = () => {
@@ -268,6 +287,12 @@ const PackageDetail: React.FC = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <Loader />
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <Button
@@ -445,6 +470,14 @@ const PackageDetail: React.FC = () => {
             className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
+            {isLoading && (
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md rounded-lg">
+                <div className="animate-spin h-10 w-10 border-4 border-red-500 border-t-transparent rounded-full"></div>
+                <p className="mt-3 text-sm text-gray-700">
+                  Finalizing your booking...
+                </p>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"

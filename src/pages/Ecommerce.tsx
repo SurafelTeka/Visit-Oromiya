@@ -32,6 +32,7 @@ const Ecommerce: React.FC = () => {
   );
 
   return (
+<<<<<<< HEAD
     <>
       <ProductPageHeader />
       <div className="container mx-auto px-4 py-10">
@@ -39,6 +40,13 @@ const Ecommerce: React.FC = () => {
           title="Zenbil Vendor Market"
           subtitle="Authentic Oromo crafts and culture — curated beautifully."
         />
+=======
+    <div className="container mx-auto px-4 py-10">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-16 rounded-lg shadow mb-10">
+        <h1 className="text-5xl font-extrabold mb-4">ZenbifdfdsfalVendor Market</h1>
+        <p className="text-lg max-w-2xl mx-auto">Authentic Oromo crafts and culture — curated beautifully.</p>
+      </div>
+>>>>>>> main
 
         {/* Category Filter */}
         <div className="flex flex-wrap gap-3 justify-center mb-10">
