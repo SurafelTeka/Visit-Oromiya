@@ -2,10 +2,12 @@ import React, { useState } from "react";
 
 interface RequestItemModalProps {
   onClose: () => void;
+  // Updated onSubmit to include the optional itemPhoto file
   onSubmit: (data: {
     phone: string;
     email?: string;
     description: string;
+    itemPhoto?: File | null;
   }) => void;
 }
 
@@ -16,6 +18,7 @@ const RequestItemModal: React.FC<RequestItemModalProps> = ({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
+  const [itemPhoto, setItemPhoto] = useState<File | null>(null); // New state for the photo file
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(
     null
   );
@@ -27,8 +30,8 @@ const RequestItemModal: React.FC<RequestItemModalProps> = ({
       return;
     }
 
-    // Simulate API call or form submission
-    onSubmit({ phone, email: email || undefined, description });
+    // Pass the itemPhoto file to the onSubmit callback
+    onSubmit({ phone, email: email || undefined, description, itemPhoto });
 
     setSubmissionMessage("We will get back to you!");
     // Close the modal after a short delay to show the message
@@ -109,6 +112,27 @@ const RequestItemModal: React.FC<RequestItemModalProps> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   required
                 ></textarea>
+              </div>
+              {/* New: Photo Upload Input */}
+              <div>
+                <label
+                  htmlFor="itemPhoto"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Include Photo (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="itemPhoto"
+                  accept="image/*" // Restrict to image files
+                  onChange={(e) => setItemPhoto(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+                />
+                {itemPhoto && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Selected: {itemPhoto.name}
+                  </p>
+                )}
               </div>
               <button
                 type="submit"

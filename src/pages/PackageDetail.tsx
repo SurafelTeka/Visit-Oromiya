@@ -15,7 +15,8 @@ import {
   X,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+// import Footer from "@/components/Footer"; // REMOVED: Old Footer import
+import ECommerceFooter from "@/components/ECommerceFooter"; // ADDED: ECommerceFooter import
 import ChatBar from "@/components/ChatBar";
 import countries from "../countries.json";
 import Loader from "@/components/Loader";
@@ -235,9 +236,12 @@ const PackageDetail: React.FC = () => {
     formData.append("country", nationality);
     formData.append("accomodation", roomType);
     formData.append("phone_number", phone);
-    formData.append("no_of_guests", Number(adults) + Number(kids));
-    formData.append("passport", passportFile);
-    formData.append("has_paid", true);
+    formData.append("no_of_guests", String(Number(adults) + Number(kids))); // Ensure number is converted to string for FormData
+    if (passportFile) {
+      // Only append if file exists
+      formData.append("passport", passportFile);
+    }
+    formData.append("has_paid", "true"); // FormData appends as string
 
     try {
       const response = await fetch("http://localhost:4000/api/checkouts", {
@@ -266,6 +270,18 @@ const PackageDetail: React.FC = () => {
   };
 
   const handleCheckout = () => {
+    // Basic form validation before opening modal
+    if (
+      !userName ||
+      !phone ||
+      !email ||
+      !nationality ||
+      !passportFile ||
+      adults + kids === 0
+    ) {
+      toast.error("Please fill all required fields and upload passport.");
+      return;
+    }
     setShowCheckoutModal(true);
   };
 
@@ -284,16 +300,15 @@ const PackageDetail: React.FC = () => {
   const closeModal = () => {
     setShowCheckoutModal(false);
   };
+
   return (
     <div className="min-h-screen">
       <Navigation />
-
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <Loader />
         </div>
       )}
-
       <div className="container mx-auto px-4 py-8">
         <Button
           onClick={() => navigate(-1)}
@@ -460,7 +475,6 @@ const PackageDetail: React.FC = () => {
           </div>
         </div>
       </div>
-
       {showCheckoutModal && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -500,6 +514,7 @@ const PackageDetail: React.FC = () => {
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Enter your full name"
                 className="w-full px-3 py-2 border rounded-md"
+                required // Added required
               />
 
               <label className="block text-sm font-medium text-gray-700">
@@ -518,6 +533,7 @@ const PackageDetail: React.FC = () => {
                   placeholder="912345678"
                   maxLength={9}
                   className="w-full px-3 py-2 border rounded-r-md"
+                  required // Added required
                 />
               </div>
 
@@ -525,11 +541,12 @@ const PackageDetail: React.FC = () => {
                 Email
               </label>
               <input
-                type="email"
+                type="email" // Changed type to email for browser validation
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@mail.com"
                 className="w-full px-3 py-2 border rounded-md"
+                required // Added required
               />
 
               <label className="block text-sm font-medium text-gray-700">
@@ -540,6 +557,7 @@ const PackageDetail: React.FC = () => {
                 accept="application/pdf,image/*"
                 onChange={(e) => setPassportFile(e.target.files?.[0] || null)}
                 className="w-full px-3 py-2 border rounded-md"
+                required // Added required
               />
               <label className="block text-sm font-medium text-gray-700">
                 Nationality
@@ -548,6 +566,7 @@ const PackageDetail: React.FC = () => {
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md"
+                required // Added required
               >
                 <option value="">Select your country</option>
                 {/* Map over the imported countries array */}
@@ -605,13 +624,16 @@ const PackageDetail: React.FC = () => {
                 </div>
               </div>
 
+              {/* Display selected room type and date for confirmation */}
               <label className="block text-sm font-medium text-gray-700">
-                Room Type
+                Selected Room Type
               </label>
-              <div className="bg-gray-100 px-3 py-2 rounded-md">{roomType}</div>
+              <div className="bg-gray-100 px-3 py-2 rounded-md capitalize">
+                {roomType}
+              </div>
 
               <label className="block text-sm font-medium text-gray-700">
-                Date
+                Selected Date
               </label>
               <div className="bg-gray-100 px-3 py-2 rounded-md">
                 {selectedDate?.toDateString()}
@@ -619,21 +641,14 @@ const PackageDetail: React.FC = () => {
             </div>
 
             <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setShowCheckoutModal(false)}
-              >
+              <Button variant="ghost" onClick={closeModal}>
                 Cancel
               </Button>
               <Button
                 onClick={submitCheckout}
                 className="bg-red-600 hover:bg-red-700 text-white"
-                disabled={
-                  !userName ||
-                  !email.includes("@") ||
-                  phone.length !== 9 ||
-                  !passportFile
-                }
+                // Removed inline validation to rely on 'required' attributes and initial handleCheckout check
+                disabled={isLoading}
               >
                 Confirm Booking
               </Button>
@@ -641,8 +656,7 @@ const PackageDetail: React.FC = () => {
           </div>
         </div>
       )}
-
-      <Footer />
+      <ECommerceFooter /> {/* Replaced Footer with ECommerceFooter */}
       <ChatBar />
     </div>
   );
