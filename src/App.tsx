@@ -24,6 +24,12 @@ import HandmadeTreasures from "./pages/HandmadeTreasures";
 import CheckoutPage from "./pages/CheckoutPage";
 import ChapaSuccess from "./pages/ChapaSuccess";
 import ChapaFail from "./pages/ChapaFail";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import BookingSuccess from "./pages/BookingSuccess";
+import BookingChapaCheckoutPage from "./pages/BookingChapaCheckoutPage";
+
+// In your App component
 
 const queryClient = new QueryClient();
 
@@ -34,6 +40,8 @@ const App = () => (
         <CartProvider>
           <Toaster />
           <Sonner />
+          <ToastContainer position="top-center" autoClose={3000} />
+
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -43,6 +51,7 @@ const App = () => (
               <Route path="/package/:id" element={<PackageDetail />} />
               <Route path="/packages" element={<Index />} />
               <Route path="/checkout/" element={<CheckoutPage />} />
+              <Route path="/booking-checkout/" element={<BookingChapaCheckoutPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
               <Route path="/product/:id" element={<ProductPage />} />
@@ -51,11 +60,15 @@ const App = () => (
               <Route path="/todays-picks" element={<TodaysPicks />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/cultural-finds" element={<CulturalFinds />} />
-              <Route path="/handmade-treasures" element={<HandmadeTreasures />} />
+              <Route
+                path="/handmade-treasures"
+                element={<HandmadeTreasures />}
+              />
 
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/success" element={<ChapaSuccess />} />
+              <Route path="/booking-success" element={<BookingSuccess />} />
               <Route path="/fail" element={<ChapaFail />} />
             </Routes>
           </BrowserRouter>
