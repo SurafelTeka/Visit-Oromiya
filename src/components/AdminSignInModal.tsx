@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button"; // Assuming you have this Button component
+import { Button } from "@/components/ui/button";
 
 interface AdminSignInModalProps {
   onClose: () => void;
@@ -13,30 +13,25 @@ const AdminSignInModal: React.FC<AdminSignInModalProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Keep error state for potential future use or if you want to show a "success" message
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); // Clear previous errors
     setIsLoading(true);
 
-    // --- Simulate API Call for Admin Sign-in ---
-    // In a real application, you would replace this with an actual API call
-    // to your backend authentication endpoint.
+    // --- MODIFIED SIMULATION: Always succeeds ---
     try {
-      // Example: Check against hardcoded admin credentials (for demonstration ONLY)
-      if (email === "admin@example.com" && password === "adminpass") {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-        onSignInSuccess(); // Call success callback from parent
-      } else {
-        throw new Error("Invalid email or password.");
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+      onSignInSuccess(); // Always call success callback
     } catch (err) {
-      setError((err as Error).message || "An error occurred during sign-in.");
+      // This catch block might not be hit with the simplified logic,
+      // but it's good practice to keep for actual async operations.
+      setError((err as Error).message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
-    // --- End Simulation ---
+    // --- End MODIFIED Simulation ---
   };
 
   return (
